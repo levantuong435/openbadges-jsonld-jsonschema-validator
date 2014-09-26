@@ -1,5 +1,5 @@
 {
-  "@context": "http://openbadges.org/context",
+  "@context": ["http://openbadges.org/context",{"extension1":"http://extension.com/extension"}],
   "uid": "f2c20",
   "recipient": {
     "type": "email",
@@ -40,6 +40,11 @@
       "email": "steved@example.org",
       "revocationList": "https://example.org/revoked.json",
       "_location":"http://example.org/this-issuer.json"
+    },
+
+    "extension1": {
+      "@context": "http://openbadges.org/extension1",
+      "testvalue": "it's an integer, amirite?"
     }
 
   }

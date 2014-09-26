@@ -37,12 +37,16 @@ function readAssertion(infile) {
        }
        // Get the validation link
        else {
-        contexts(data["@context"],function(err,contextResult){
+        var mainContextUrl = parseAssertionForMainContext(data)
+        console.log("I'm gonna fetch something for: " + mainContextUrl);
+
+        contexts(mainContextUrl,function(err,contextResult){
           if (err) throw err;
           var validationUrl = contextResult.document.validation;
           if (typeof validationUrl === 'string'){
             console.log("Successfully retrieved the validation URL. It is: " + validationUrl);
             stillMissingSchema = jay.register(fs.readFileSync('files/test-OBI-schema.json'),validationUrl);
+            stillMissingSchema.concat(jay.register(fs.readFileSync('files/test-OBI-schema.json'),'http://openbadges.org/schema/extension1'));
             if (stillMissingSchema.length === 0){
               jay.validate(data, validationUrl, function(validationErrs){
                 if (validationErrs){
@@ -57,8 +61,8 @@ function readAssertion(infile) {
           }
         });
        }
-       //console.log("\n=================== THE EXPANDED RESULTS =================")
-       //console.log(JSON.stringify(expanded,null,"  "));
+       console.log("\n=================== THE EXPANDED RESULTS =================")
+       console.log(JSON.stringify(expanded,null,"  "));
      });
      
     // Not valid JSON. Return error and exit.
@@ -67,6 +71,26 @@ function readAssertion(infile) {
       process.exit(1);
     }    
   }); 
+}
+
+function parseAssertionForMainContext(assertion){
+  var dig = function(context){
+    if (typeof context === 'string'){
+      return context;
+    }
+    else if (Array.isArray(context)){
+      return dig(context[0]);
+    }
+    else {
+      throw new Error("I couldn't find a URL in the context");
+    }
+  };
+  
+  if(assertion['@context'])
+    return dig(assertion['@context']);
+  else
+    throw "This JSON didn't have any @context property.";
+
 }
 
 // shell script operation control
